@@ -43,6 +43,7 @@ class EmbeddableCellDingus<T: UIView & Reusable>: UITableViewCell {
 
         self.contentView.addSubview(dingus)
         self.dingus.alignEdges(to: self.contentView)
+        self.dingus.translatesAutoresizingMaskIntoConstraints = false
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -61,8 +62,10 @@ class ThumbnailView: UIView, Reusable {
         self.imageView.alignEdges(to: self)
         NSLayoutConstraint.activate([
             self.imageView.heightAnchor.constraint(equalToConstant: 40),
-            self.imageView.widthAnchor.constraint(equalToConstant: 40)
+//            self.imageView.widthAnchor.constraint(equalToConstant: 40)
         ])
+
+        self.imageView.translatesAutoresizingMaskIntoConstraints = false
     }
 
     required init?(coder aDecoder: NSCoder) {
