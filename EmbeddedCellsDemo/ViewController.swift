@@ -34,20 +34,13 @@ extension UIView {
 
 
 
-class EmbeddableCellDingus<T: UIView & Reusable>: UITableViewCell {
-    let dingus: T
+class EmbeddableCellDingus<T: UIView & Reusable>: UITableViewCell, Reusable {
 
-    public init(dingus: T) {
-        self.dingus = dingus
-        super.init(style: .default, reuseIdentifier: T.reuseIdentifier)
-
+    func configure(with dingus: T) {
+        self.contentView.subviews.forEach{ $0.removeFromSuperview() }
         self.contentView.addSubview(dingus)
-        self.dingus.alignEdges(to: self.contentView)
-        self.dingus.translatesAutoresizingMaskIntoConstraints = false
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        dingus.alignEdges(to: self.contentView)
+        dingus.translatesAutoresizingMaskIntoConstraints = false
     }
 }
 
@@ -88,6 +81,10 @@ class ViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = UITableView.automaticDimension
+        print(EmbeddableCellDingus<ThumbnailView>.reuseIdentifier)
+
+        tableView.register(EmbeddableCellDingus<ThumbnailView>.self, forCellReuseIdentifier: EmbeddableCellDingus<ThumbnailView>.reuseIdentifier)
+        tableView.register(EmbeddableCellDingus<UILabel>.self, forCellReuseIdentifier: EmbeddableCellDingus<UILabel>.reuseIdentifier)
         // Do any additional setup after loading the view, typically from a nib.
     }
 
@@ -100,14 +97,18 @@ class ViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.row % 2 == 0 {
+        if indexPath.row % 2 == 0, let cell = tableView.dequeueReusableCell(withIdentifier: EmbeddableCellDingus<ThumbnailView>.reuseIdentifier, for: indexPath) as? EmbeddableCellDingus<ThumbnailView> {
             let thumbnail = UIImage(named: "AwesomeIcon")!
             let thumbnailView = ThumbnailView(thumbnail)
-            return EmbeddableCellDingus<ThumbnailView>(dingus: thumbnailView)
-        } else {
+            cell.configure(with: thumbnailView)
+            return cell
+        } else if let cell = tableView.dequeueReusableCell(withIdentifier: EmbeddableCellDingus<UILabel>.reuseIdentifier, for: indexPath) as? EmbeddableCellDingus<UILabel> {
             let label = UILabel.init()
             label.text = "sadfkjnasdkflasdkf"
-            return EmbeddableCellDingus<UILabel>(dingus: label)
+            cell.configure(with: label)
+            return cell
+        } else {
+            return UITableViewCell()
         }
     }
 }
