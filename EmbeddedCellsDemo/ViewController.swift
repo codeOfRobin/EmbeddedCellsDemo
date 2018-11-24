@@ -148,7 +148,6 @@ protocol NullifiableForReuse {
     associatedtype State
     associatedtype CreationArgs
 
-    func nullifyState()
     // It's wrong to assume VCs are initialized via nibName:Bundle
     func configure(with state: State)
     static var create: (CreationArgs) -> Self { get set }
@@ -160,13 +159,12 @@ class ViewControllerEmbeddingCell<T: UIViewController & NullifiableForReuse>: UI
     var vc: T?
 
     override func prepareForReuse() {
-        self.vc?.nullifyState()
+        self.vc?.view.removeFromSuperview()
     }
 
     func configure(with state: T.State, creationArgs: T.CreationArgs) {
         let vc = self.vc ?? T.create(creationArgs)
         vc.configure(with: state)
-        self.contentView.subviews.forEach{ $0.removeFromSuperview() }
         self.contentView.addSubview(vc.view)
         vc.view.translatesAutoresizingMaskIntoConstraints = false
         vc.view.alignEdges(to: self.contentView)
@@ -296,6 +294,14 @@ final class BlueViewController: UIViewController, NullifiableForReuse {
 
     static var create: (Void) -> BlueViewController = {_ in
         return BlueViewController.init(nibName: nil, bundle: nil)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
     }
 
     typealias State = Void
