@@ -48,12 +48,13 @@ class ViewControllerEmbeddingCell<T: UIViewController & NullifiableForReuse>: UI
     var vc: T?
 
     override func prepareForReuse() {
-        self.vc?.view.removeFromSuperview()
+        self.vc?.remove()
     }
 
-    func configure(with state: T.State, creationArgs: T.CreationArgs) {
+	func configure(with state: T.State, creationArgs: T.CreationArgs, parentVC: UIViewController) {
         let vc = self.vc ?? T.create(creationArgs)
         vc.configure(with: state)
+		parentVC.add(vc)
         self.contentView.addSubview(vc.view)
         vc.view.translatesAutoresizingMaskIntoConstraints = false
         vc.view.alignEdges(to: self.contentView)
@@ -81,11 +82,11 @@ class TestingEmbeddedVCViewController: UIViewController, UITableViewDataSource {
             switch indexPath.row % 2 == 0 {
             case true:
                 let cell = tableView.dequeueReusableCell(withIdentifier: ViewControllerEmbeddingCell<RedViewController>.reuseIdentifier, for: indexPath)  as? ViewControllerEmbeddingCell<RedViewController>
-                    cell?.configure(with: ("\(indexPath.row)"), creationArgs: ())
+				cell?.configure(with: ("\(indexPath.row)"), creationArgs: (), parentVC: self)
                 return cell
             case false:
                 let cell = tableView.dequeueReusableCell(withIdentifier: ViewControllerEmbeddingCell<BlueViewController>.reuseIdentifier, for: indexPath)  as? ViewControllerEmbeddingCell<BlueViewController>
-                cell?.configure(with: (), creationArgs: ())
+				cell?.configure(with: (), creationArgs: (), parentVC: self)
                 return cell
             }
         }
@@ -127,6 +128,7 @@ final class RedViewController: UIViewController, NullifiableForReuse {
     let image = UIImageView(image: UIImage.init(named: "AwesomeIcon")!)
     let label = UILabel()
 
+	var containingVC: UIViewController?
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -140,6 +142,15 @@ final class RedViewController: UIViewController, NullifiableForReuse {
         self.view.addSubview(label)
     }
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		print("Appearing RedVC")
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		print("Disappearing RedVC")
+	}
 
     func nullifyState() {
         self.view.backgroundColor = .white
@@ -164,6 +175,8 @@ final class RedViewController: UIViewController, NullifiableForReuse {
 
 final class BlueViewController: UIViewController, NullifiableForReuse {
 
+	var containingVC: UIViewController?
+
     var intrinsicContentSize: CGSize {
         return CGSize.init(width: 40, height: 60)
     }
@@ -187,15 +200,33 @@ final class BlueViewController: UIViewController, NullifiableForReuse {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+		print("Appearing BlueVC")
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+		print("Disappearing BlueVC")
     }
 
     typealias State = Void
 
     typealias CreationArgs = Void
+}
 
+extension UIViewController {
+	func add(_ child: UIViewController) {
+		addChild(child)
+		view.addSubview(child.view)
+		child.didMove(toParent: self)
+	}
 
+	func remove() {
+		guard parent != nil else {
+			return
+		}
+
+		willMove(toParent: nil)
+		view.removeFromSuperview()
+		removeFromParent()
+	}
 }
