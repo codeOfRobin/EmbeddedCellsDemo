@@ -48,7 +48,6 @@ class ViewControllerEmbeddingCell<T: UIViewController & NullifiableForReuse>: UI
     var vc: T?
 
     override func prepareForReuse() {
-		print(self.vc)
         self.vc?.view.removeFromSuperview()
     }
 
@@ -151,7 +150,7 @@ final class RedViewController: UIViewController, NullifiableForReuse {
         self.label.text = state
     }
 
-    static var create: (Void) -> RedViewController = {_ in
+    static var create: (Void) -> RedViewController = { _ in
         return RedViewController.init(nibName: nil, bundle: nil)
     }
 
