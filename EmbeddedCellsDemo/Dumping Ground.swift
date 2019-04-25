@@ -107,15 +107,3 @@ import Foundation
 //}
 //
 //
-//extension ViewController {
-//    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        // *Uncomfortable typecasting intensifies*
-//        // *will have to do this for every type*
-//        (cell as? EmbeddableCellDingus<ThumbnailView>)?.manager.contentViewWillAppear()
-//    }
-//
-//    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        (cell as? EmbeddableCellDingus<ThumbnailView>)?.manager.contentViewDidDisappear()
-//    }
-//}
-//

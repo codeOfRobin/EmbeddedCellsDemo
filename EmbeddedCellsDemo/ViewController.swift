@@ -71,7 +71,7 @@ class ViewControllerEmbeddingCell<T: UIViewController & NullifiableForReuse>: UI
 }
 
 
-class TestingEmbeddedVCViewController: UIViewController, UITableViewDataSource {
+class TestingEmbeddedVCViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 100
@@ -103,6 +103,10 @@ class TestingEmbeddedVCViewController: UIViewController, UITableViewDataSource {
 
         tableView.dataSource = self
 
+		let cell = ViewControllerEmbeddingCell<RedViewController>(
+			style: .default, // Uh, default I guess? Defaults are good? or is it value1(?!)
+			reuseIdentifier: "wait what") //whyyyyy
+
         tableView.register(ViewControllerEmbeddingCell<RedViewController>.self, forCellReuseIdentifier: ViewControllerEmbeddingCell<RedViewController>.reuseIdentifier)
         tableView.register(ViewControllerEmbeddingCell<BlueViewController>.self, forCellReuseIdentifier: ViewControllerEmbeddingCell<BlueViewController>.reuseIdentifier)
     }
@@ -111,6 +115,17 @@ class TestingEmbeddedVCViewController: UIViewController, UITableViewDataSource {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds.insetBy(dx: 50, dy: 100)
     }
+
+
+	func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+		// *Uncomfortable typecasting intensifies*
+		// *will have to do this for every type via a switch case or some such*
+		(cell as? ViewControllerEmbeddingCell<RedViewController>)?.vc?.viewWillAppear(false)
+	}
+
+	func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+		(cell as? ViewControllerEmbeddingCell<RedViewController>)?.vc?.viewDidDisappear(false)
+	}
 }
 
 
